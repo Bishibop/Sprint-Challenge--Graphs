@@ -38,47 +38,32 @@ bfs_deque = deque()
 
 while len(my_visited) < len(room_graph):
     current_room = player.current_room
-    #  print('cur: ', current_room.id, end=', ')
-    print('total: ', len(my_visited))
-    #  time.sleep(.3)
-    exits = current_room.get_exits()
-    rooms = [(current_room.get_room_in_direction(exit), exit)
-             for exit in exits]
-    next_room = next((room for room in rooms if room[0] not in my_visited),
-                     None)
-    if next_room:
-        #  print('next room: ', next_room)
-        my_visited.add(next_room[0])
-        traversal_path.append(next_room[1])
-        player.travel(next_room[1], show_rooms=False)
-    else:
-        print('initiating bfs...')
-        bfs_deque.append((current_room, []))
-        nearest_unvisited = None
-        bfs_visited = set()
-        bfs_visited.add(current_room)
-        while not nearest_unvisited:
-            room_path = bfs_deque.popleft()
-            bfs_visited.add(room_path[0])
-            print('searching: ', room_path[0].id)
-            if room_path[0] not in my_visited:
-                nearest_unvisited = room_path
-                bfs_deque.clear()
-            else:
-                exits = room_path[0].get_exits()
-                rooms = [(room_path[0].get_room_in_direction(exit), exit)
-                         for exit in exits]
-                unvisited_rooms = [
-                    room for room in rooms if room[0] not in bfs_visited
-                ]
-                for room in unvisited_rooms:
-                    new_path = room_path[1].copy()
-                    new_path.append(room[1])
-                    bfs_deque.append((room[0], new_path))
-        traversal_path.extend(nearest_unvisited[1])
-        for path in nearest_unvisited[1]:
-            player.travel(path, show_rooms=False)
-        my_visited.add(nearest_unvisited[0])
+    bfs_deque.append((current_room, []))
+    nearest_unvisited = None
+    bfs_visited = set()
+    bfs_visited.add(current_room)
+    while not nearest_unvisited:
+        room_path = bfs_deque.popleft()
+        bfs_visited.add(room_path[0])
+        print('searching: ', room_path[0].id)
+        if room_path[0] not in my_visited:
+            nearest_unvisited = room_path
+            bfs_deque.clear()
+        else:
+            exits = room_path[0].get_exits()
+            rooms = [(room_path[0].get_room_in_direction(exit), exit)
+                     for exit in exits]
+            unvisited_rooms = [
+                room for room in rooms if room[0] not in bfs_visited
+            ]
+            for room in unvisited_rooms:
+                new_path = room_path[1].copy()
+                new_path.append(room[1])
+                bfs_deque.append((room[0], new_path))
+    traversal_path.extend(nearest_unvisited[1])
+    for path in nearest_unvisited[1]:
+        player.travel(path, show_rooms=False)
+    my_visited.add(nearest_unvisited[0])
 
 # TRAVERSAL TEST - DO NOT MODIFY
 visited_rooms = set()
