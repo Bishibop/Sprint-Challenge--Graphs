@@ -30,10 +30,9 @@ player = Player(world.starting_room)
 # traversal_path = ['n', 'n']
 traversal_path = []
 
-print('my algo')
+#  Breadth first search method
 my_visited = set()
 my_visited.add(player.current_room)
-direction_swap = {'n': 's', 's': 'n', 'e': 'w', 'w': 'e'}
 bfs_deque = deque()
 
 while len(my_visited) < len(room_graph):
@@ -45,7 +44,6 @@ while len(my_visited) < len(room_graph):
     while not nearest_unvisited:
         room_path = bfs_deque.popleft()
         bfs_visited.add(room_path[0])
-        print('searching: ', room_path[0].id)
         if room_path[0] not in my_visited:
             nearest_unvisited = room_path
             bfs_deque.clear()
