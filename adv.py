@@ -1,9 +1,11 @@
+from collections import deque
+import time
+import random
+from ast import literal_eval
+
 from room import Room
 from player import Player
 from world import World
-
-import random
-from ast import literal_eval
 
 # Load world
 world = World()
@@ -12,7 +14,7 @@ world = World()
 # map_file = "maps/test_line.txt"
 # map_file = "maps/test_cross.txt"
 # map_file = "maps/test_loop.txt"
-# map_file = "maps/test_loop_fork.txt"
+#  map_file = "maps/test_loop_fork.txt"
 map_file = "maps/main_maze.txt"
 
 # Loads the map into a dictionary
@@ -29,37 +31,54 @@ player = Player(world.starting_room)
 traversal_path = []
 
 print('my algo')
-first_entered = {}
-first_entered[player.current_room] = None
+my_visited = set()
+my_visited.add(player.current_room)
 direction_swap = {'n': 's', 's': 'n', 'e': 'w', 'w': 'e'}
-#  backtrack1 = deque()
-#  backtrack2 = []
+bfs_deque = deque()
 
-while len(first_entered) < len(room_graph):
+while len(my_visited) < len(room_graph):
     current_room = player.current_room
     #  print('cur: ', current_room.id, end=', ')
-    #  print('total: ', len(first_entered))
-    #  time.sleep(1)
+    print('total: ', len(my_visited))
+    #  time.sleep(.3)
     exits = current_room.get_exits()
     rooms = [(current_room.get_room_in_direction(exit), exit)
              for exit in exits]
-    next_room = next((room for room in rooms if room[0] not in first_entered),
+    next_room = next((room for room in rooms if room[0] not in my_visited),
                      None)
     if next_room:
         #  print('next room: ', next_room)
-        #  if backtrack2:
-        #      traversal_path.extend(backtrack1)
-        #      traversal_path.extend(backtrack2)
-        #      backtrack1.clear()
-        #      backtrack2.clear()
-        first_entered[next_room[0]] = direction_swap[next_room[1]]
+        my_visited.add(next_room[0])
         traversal_path.append(next_room[1])
         player.travel(next_room[1], show_rooms=False)
     else:
-        #  print('backtracking...')
-        backwards = first_entered[current_room]
-        traversal_path.append(backwards)
-        player.travel(backwards, show_rooms=False)
+        print('initiating bfs...')
+        bfs_deque.append((current_room, []))
+        nearest_unvisited = None
+        bfs_visited = set()
+        bfs_visited.add(current_room)
+        while not nearest_unvisited:
+            room_path = bfs_deque.popleft()
+            bfs_visited.add(room_path[0])
+            print('searching: ', room_path[0].id)
+            if room_path[0] not in my_visited:
+                nearest_unvisited = room_path
+                bfs_deque.clear()
+            else:
+                exits = room_path[0].get_exits()
+                rooms = [(room_path[0].get_room_in_direction(exit), exit)
+                         for exit in exits]
+                unvisited_rooms = [
+                    room for room in rooms if room[0] not in bfs_visited
+                ]
+                for room in unvisited_rooms:
+                    new_path = room_path[1].copy()
+                    new_path.append(room[1])
+                    bfs_deque.append((room[0], new_path))
+        traversal_path.extend(nearest_unvisited[1])
+        for path in nearest_unvisited[1]:
+            player.travel(path, show_rooms=False)
+        my_visited.add(nearest_unvisited[0])
 
 # TRAVERSAL TEST - DO NOT MODIFY
 visited_rooms = set()
